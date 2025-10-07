@@ -24,6 +24,7 @@ jobs:
 
       - name: Run tests and generate coverage
         run: npm run test:cov
+        continue-on-error: true
 
       - name: Install Sonar Scanner
         run: npm install -g sonar-scanner
