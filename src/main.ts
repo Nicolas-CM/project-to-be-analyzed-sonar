@@ -2,12 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // Enable validation
   app.useGlobalPipes(new ValidationPipe());
+
+  // Enable metrics interceptor
+  app.useGlobalInterceptors(app.get(MetricsInterceptor));
 
   // Habilitar CORS
   const allowedOrigins = [

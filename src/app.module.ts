@@ -20,6 +20,7 @@ import { CartItemModule } from './cart-item/cart-item.module';
 import { OrderItemModule } from './order-items/order-items.module';
 import { CartModule } from './cart/cart.module';
 import { PaymentModule } from './payment/payment.module';
+import { PrometheusModule } from './prometheus/prometheus.module';
 
 @Module({
   controllers: [AppController],
@@ -76,6 +77,7 @@ import { PaymentModule } from './payment/payment.module';
     OrderItemModule,
     CartModule,
     PaymentModule,
+    PrometheusModule,
   ],
   providers: [AppService],
 })

@@ -11,7 +11,10 @@ import { OrderItem } from '../entities/order-item.entity';
 
 @Injectable()
 export class PaymentService {
-  private client: MercadoPagoConfig;  constructor(
+  private client: MercadoPagoConfig;
+  private isConfigured: boolean = false;
+
+  constructor(
     private readonly configService: ConfigService,
     private readonly cartService: CartService,
     private readonly authService: AuthService,
@@ -21,14 +24,26 @@ export class PaymentService {
   ) {
     const accessToken = this.configService.get<string>('MERCADO_PAGO_ACCESS_TOKEN');
     if (!accessToken) {
-      throw new Error('MERCADO_PAGO_ACCESS_TOKEN is not defined');
+      console.warn('⚠️  Mercado Pago access token not found in environment variables. Payment integration will be disabled.');
+      this.isConfigured = false;
+      return;
     }
     this.client = new MercadoPagoConfig({
       accessToken,
     });
+    this.isConfigured = true;
+  }
+
+  private checkConfiguration() {
+    if (!this.isConfigured) {
+      throw new Error(
+        'Mercado Pago is not configured. Please set MERCADO_PAGO_ACCESS_TOKEN environment variable.',
+      );
+    }
   }
 
   async createPaymentPreference(cartId: string) {
+    this.checkConfiguration();
     try {
       const cart = await this.cartService.findOne(cartId);
       if (!cart) {
@@ -71,6 +86,7 @@ export class PaymentService {
       throw error;
     }
   }  async handleWebhook(data: any) {
+    this.checkConfiguration();
     try {
       if (data.type === 'payment') {
         const payment = new Payment(this.client);
@@ -232,6 +248,7 @@ export class PaymentService {
   }
 
   async getPaymentStatus(paymentId: string) {
+    this.checkConfiguration();
     try {
       const payment = new Payment(this.client);
       const paymentInfo = await payment.get({ id: paymentId });

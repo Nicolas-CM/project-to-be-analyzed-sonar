@@ -4,24 +4,37 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CloudinaryService {
+  private isConfigured: boolean = false;
+
   constructor(private configService: ConfigService) {
     const cloudName = this.configService.get<string>('CLOUDINARY_CLOUD_NAME');
     const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY');
     const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET');
 
-    console.log('=== CLOUDINARY CONFIGURATION ===');
-    console.log('Cloud Name:', cloudName ? 'SET' : 'NOT SET');
-    console.log('API Key:', apiKey ? 'SET' : 'NOT SET');
-    console.log('API Secret:', apiSecret ? 'SET' : 'NOT SET');
+    if (!cloudName || !apiKey || !apiSecret) {
+      console.warn('⚠️  Cloudinary credentials not found in environment variables. Image upload will be disabled.');
+      this.isConfigured = false;
+      return;
+    }
 
     cloudinary.config({
       cloud_name: cloudName,
       api_key: apiKey,
       api_secret: apiSecret,
     });
+    this.isConfigured = true;
+  }
+
+  private checkConfiguration() {
+    if (!this.isConfigured) {
+      throw new Error(
+        'Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.',
+      );
+    }
   }
 
   async uploadImageProfile(file: Express.Multer.File): Promise<string> {
+    this.checkConfiguration();
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -49,6 +62,7 @@ export class CloudinaryService {
   }
 
   async uploadLabelImage(file: Express.Multer.File): Promise<string> {
+    this.checkConfiguration();
     // Usar el servicio de Cloudinary pero con configuración específica para labels
     return new Promise((resolve, reject) => {
       cloudinary.uploader
@@ -85,6 +99,7 @@ export class CloudinaryService {
   }
 
   async uploadAudio(file: Express.Multer.File): Promise<string> {
+    this.checkConfiguration();
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -117,6 +132,7 @@ export class CloudinaryService {
   }
 
   async uploadQRCode(buffer: Buffer, candleId: string): Promise<string> {
+    this.checkConfiguration();
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
@@ -153,6 +169,7 @@ export class CloudinaryService {
   }
 
   async deleteImage(publicId: string): Promise<void> {
+    this.checkConfiguration();
     console.log(`🗑️ Attempting to delete image from Cloudinary: ${publicId}`);
     return new Promise((resolve, reject) => {
       cloudinary.uploader.destroy(publicId, (error, result) => {
@@ -174,6 +191,7 @@ export class CloudinaryService {
   }
 
   async deleteAudio(publicId: string): Promise<void> {
+    this.checkConfiguration();
     console.log(`🗑️ Attempting to delete audio from Cloudinary: ${publicId}`);
     return new Promise((resolve, reject) => {
       cloudinary.uploader.destroy(
@@ -199,6 +217,7 @@ export class CloudinaryService {
   }
 
   async upload3DModel(file: Express.Multer.File): Promise<string> {
+    this.checkConfiguration();
     return new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(

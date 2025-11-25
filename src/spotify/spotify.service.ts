@@ -9,6 +9,7 @@ import {
 @Injectable()
 export class SpotifyService {
   private spotifyApi: any;
+  private isConfigured: boolean = false;
 
   constructor(private configService: ConfigService) {
     const clientId = this.configService.get<string>('SPOTIFY_CLIENT_ID');
@@ -17,19 +18,36 @@ export class SpotifyService {
     );
 
     if (!clientId || !clientSecret) {
-      throw new Error('Spotify credentials not found in environment variables');
+      console.warn('⚠️  Spotify credentials not found in environment variables. Spotify integration will be disabled.');
+      this.isConfigured = false;
+      return;
     }
 
     this.spotifyApi = new SpotifyWebApi({
       clientId,
       clientSecret,
     });
+    this.isConfigured = true;
+  }
+
+  /**
+   * Check if Spotify is configured
+   */
+  private checkConfiguration() {
+    if (!this.isConfigured) {
+      throw new HttpException(
+        'Spotify integration is not configured. Please set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET environment variables.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 
   /**
    * Search for tracks on Spotify
    */
   async searchTracks(query: string): Promise<SpotifySearchResponseDto> {
+    this.checkConfiguration();
+    
     if (!query || query.trim().length === 0) {
       throw new HttpException(
         'Query parameter is required',

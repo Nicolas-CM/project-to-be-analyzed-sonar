@@ -101,12 +101,9 @@
 							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
 						},
 						"url": {
-							"raw": "aromalife-backend-production.up.railway.app/auth/login",
+							"raw": "{{base_url}}/auth/login",
 							"host": [
-								"aromalife-backend-production",
-								"up",
-								"railway",
-								"app"
+								"{{base_url}}"
 							],
 							"path": [
 								"auth",
@@ -2087,7 +2084,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "aromalife-backend-production.up.railway.app"
+			"value": "http://localhost:3001"
 		},
 		{
 			"key": "token",
